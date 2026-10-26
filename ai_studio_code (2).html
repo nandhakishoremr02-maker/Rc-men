@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RC MEN — Small Cars. Big Adrenaline.</title>
+<link rel="icon" type="image/png" href="https://kommodo.ai/i/VoxWFuOeN7p6uO6nuQPC">
+
+<!-- Google Fonts: Big Shoulders Display + Manrope -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap">
+
+<!-- 3D Model Viewer for GLB/GLTF Models -->
+<script type="module" src="https://cdn.jsdelivr.net/npm/@google/model-viewer@3.5.0/dist/model-viewer.min.js"></script>
+
+<style>
+:root {
+  --bg: #07070a;
+  --panel: #111116;
+  --panel-elevated: #181820;
+  --line: #2a2a31;
+  --gold: #c9a24b;
+  --gold2: #f3dc9a;
+  --gold-glow: rgba(243,220,154,0.45);
+  --red: #d1202f;
+  --red-glow: rgba(209,32,47,0.5);
+  --tx: #f1ece2;
+  --mut: #9a958a;
+  --head: 'Big Shoulders Display', 'Arial Narrow', Impact, sans-serif;
+  --body: 'Manrope', system-ui, sans-serif;
+  --mono: 'Space Grotesk', monospace;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { color-scheme: dark; scroll-behavior: smooth; background: var(--bg); }
+body { margin: 0; background: var(--bg); color: var(--tx); font: 400 16px/1.55 var(--body); overflow-x: hidden; }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--gold2); outline-offset: 3px; }
+
+.gold {
+  background: linear-gradient(100deg, #8a6a24, var(--gold2) 45%, #a98332 70%, var(--gold2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ================= 1. CINEMATIC INTRO LOADER ================= */
+#loader {
+  position: fixed; inset: 0; z-index: 999; background: var(--bg);
+  display: grid; place-items: center; transition: opacity .6s, visibility .6s;
+}
+#loader.done { opacity: 0; visibility: hidden; pointer-events: none; }
+.loader-wrap { text-align: center; }
+.loader-logo {
+  height: clamp(48px, 10vw, 76px); width: auto; max-width: 85vw; object-fit: contain;
+  filter: drop-shadow(0 0 20px var(--red-glow));
+  clip-path: inset(0 100% 0 0); animation: reveal 1.2s .2s cubic-bezier(.6,0,.2,1) forwards;
+}
+#loader i {
+  display: block; height: 3px; background: linear-gradient(90deg, var(--red), var(--gold2));
+  width: 0; margin: 12px auto 0; border-radius: 2px; animation: bar 1.2s .2s forwards;
+}
+@keyframes reveal { to { clip-path: inset(0 0 0 0); } }
+@keyframes bar { to { width: 100%; } }
+
+/* ================= 2. SITE HEADER ================= */
+header {
+  position: sticky; top: 0; z-index: 30;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 24px; padding-top: calc(12px + env(safe-area-inset-top, 0px));
+  background: rgba(7,7,10,.88); backdrop-filter: blur(12px); border-bottom: 1px solid var(--line);
+}
+.logo-link { display: flex; align-items: center; gap: 8px; text-decoration: none; cursor: pointer; }
+.logo-img {
+  height: 42px; width: auto; max-width: 180px; object-fit: contain;
+  filter: drop-shadow(0 0 10px rgba(209,32,47,0.35)); transition: transform .25s ease;
+}
+.logo-link:hover .logo-img { transform: scale(1.03); filter: drop-shadow(0 0 16px var(--red-glow)); }
+
+nav { display: flex; gap: 20px; align-items: center; }
+nav a { color: var(--mut); text-decoration: none; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; transition: color .2s; }
+nav a:hover { color: var(--gold2); }
+
+#cartBtn {
+  background: none; border: 1px solid var(--gold); border-radius: 999px;
+  padding: 6px 16px; font-size: 14px; font-weight: 600; font-family: var(--head);
+  letter-spacing: .08em; transition: all .2s;
+}
+#cartBtn:hover { background: var(--gold); color: #000; box-shadow: 0 0 14px var(--gold-glow); }
+#cartBtn b { color: var(--gold2); }
+#cartBtn:hover b { color: #000; }
+
+/* Secret Owner Status Bar */
+#owner-bar {
+  display: none; background: #261600; border-bottom: 2px solid var(--gold);
+  padding: 8px 20px; justify-content: space-between; align-items: center; font-size: 13px; font-family: var(--mono);
+}
+#owner-bar.active { display: flex; }
+
+/* ================= 3. HERO ================= */
+.hero {
+  min-height: 76svh; display: grid; align-content: center; padding: 48px 20px;
+  text-align: center; background: radial-gradient(ellipse at 50% 100%, rgba(201,162,75,.2), transparent 60%);
+}
+.hero h2 { font: 900 clamp(44px, 12vw, 116px)/.95 var(--head); margin: 0 0 14px; letter-spacing: .03em; }
+.hero p { color: var(--mut); max-width: 46ch; margin: 0 auto 28px; font-size: 16px; }
+
+.cta {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  background: var(--gold); color: #111; border: 0; border-radius: 2px;
+  padding: 14px 30px; font-weight: 700; font-family: var(--head); font-size: 17px;
+  letter-spacing: .08em; text-transform: uppercase; text-decoration: none; transition: all .2s;
+}
+.cta:hover { background: var(--gold2); box-shadow: 0 0 20px var(--gold-glow); transform: translateY(-2px); }
+.cta.gh { background: none; border: 1px solid var(--gold); color: var(--gold2); }
+.cta.gh:hover { background: var(--gold); color: #111; }
+
+/* ================= 4. THE LUXURY 3D GARAGE STAGE ================= */
+#garage { padding: 40px 0 64px; border-top: 1px solid var(--line); }
+#garage > h3 { font: 900 clamp(34px, 7vw, 60px) var(--head); text-align: center; margin: 0; letter-spacing: .04em; }
+#garage > p { text-align: center; color: var(--mut); margin: 6px 20px 0; font-size: 14px; }
+
+.stage {
+  position: relative; height: clamp(420px, 58vw, 680px); margin-top: 24px;
+  overflow: hidden; perspective: 1000px;
+  background: linear-gradient(#050507, #0b0a08 58%, #050507);
+}
+
+/* Overhead Golden Lighting Ring */
+.ring {
+  position: absolute; left: 50%; top: -18%; width: 76%; height: 44%; transform: translateX(-50%);
+  border-radius: 50%; border: 3px solid var(--gold2);
+  box-shadow: 0 0 26px rgba(243,220,154,.55), inset 0 0 40px rgba(201,162,75,.25);
+  pointer-events: none;
+}
+
+/* Garage Central Back Wall */
+.wall {
+  position: absolute; left: 50%; top: 10%; width: 36%; height: 36%; transform: translateX(-50%);
+  border: 1px solid rgba(201,162,75,.35); background: linear-gradient(160deg, #17150f, #07070a);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; box-shadow: 0 0 60px rgba(201,162,75,.15); padding: 10px;
+}
+.wall-logo {
+  height: clamp(32px, 5.5vw, 64px); width: auto; max-width: 85%;
+  object-fit: contain; filter: drop-shadow(0 0 12px var(--red-glow)); margin-bottom: 6px;
+}
+.wall em { font-style: normal; font-size: clamp(8px, 1.2vw, 13px); letter-spacing: .25em; color: var(--gold2); font-family: var(--head); font-weight: 700; }
+
+/* Angled Perspective Side Walls */
+.side {
+  position: absolute; top: 14%; width: 18%; height: 32%; border: 1px solid rgba(201,162,75,.3);
+  background: linear-gradient(#14120d, #07070a); padding: 0 2.5%;
+  font: 700 clamp(10px, 1.6vw, 20px)/1.5 var(--head); letter-spacing: .14em; color: var(--mut);
+  display: flex; flex-direction: column; justify-content: center;
+  box-shadow: inset 0 0 30px rgba(201,162,75,.12);
+}
+.side::before { content: ''; position: absolute; top: 0; bottom: 0; width: 3px; background: var(--gold); box-shadow: 0 0 14px var(--gold); }
+.side.l { left: 3%; transform: perspective(500px) rotateY(18deg); }
+.side.l::before { left: -2px; }
+.side.r { right: 3%; transform: perspective(500px) rotateY(-18deg); text-align: right; color: var(--gold2); }
+.side.r::before { right: -2px; }
+
+/* Parabolic Curved Stage Floor & Rotating Disc */
+.floor {
+  position: absolute; left: 0; right: 0; bottom: 0; height: 46%;
+  background: linear-gradient(#0a0a0d, #17140c 40%, #050507);
+  border-top: 2px solid var(--gold); box-shadow: 0 -6px 30px rgba(201,162,75,.35);
+  border-radius: 50% 50% 0 0 / 22% 22% 0 0; pointer-events: none;
+}
+.disc {
+  position: absolute; left: 50%; bottom: 3%; width: 34%; height: 12%; transform: translateX(-50%);
+  border-radius: 50%; border: 2px solid var(--gold);
+  box-shadow: 0 0 22px rgba(201,162,75,.5), inset 0 0 30px rgba(201,162,75,.2);
+  display: grid; place-items: center; font: 900 clamp(12px, 2.4vw, 30px) var(--head);
+  letter-spacing: .14em; color: rgba(243,220,154,.45); pointer-events: none;
+}
+
+/* Individual Parabolic Car Podium */
+.car {
+  position: absolute; left: 50%; bottom: 14%; width: clamp(160px, 24vw, 340px);
+  margin-left: calc(clamp(160px, 24vw, 340px) / -2);
+  background: none; border: 0; padding: 0;
+  transition: transform .6s cubic-bezier(.3,.7,.2,1), opacity .4s;
+  transform-origin: 50% 100%; cursor: pointer;
+}
+/* Glowing Circular Base Under Each Car */
+.car::before {
+  content: ''; position: absolute; left: -6%; right: -6%; bottom: 26px; height: 34%;
+  border-radius: 50%; background: radial-gradient(#26231a, #0a0a0d);
+  border: 2px solid var(--gold); box-shadow: 0 0 18px rgba(201,162,75,.6); z-index: -1;
+}
+.car-visual {
+  width: 100%; height: auto; display: block;
+  filter: drop-shadow(0 16px 14px rgba(0,0,0,.75));
+}
+.car span {
+  display: block; margin: 8px auto 0; width: 74%; padding: 4px 0; text-align: center;
+  font: 700 clamp(11px, 1.4vw, 15px) var(--head); letter-spacing: .12em; color: var(--tx);
+  background: #08080a; border: 1px solid var(--gold); transform: skewX(-8deg);
+  transition: all .3s;
+}
+.car.on span { border-color: var(--gold2); box-shadow: 0 0 14px var(--gold-glow); color: var(--gold2); }
+
+@media(max-width: 620px) {
+  .side { display: none; }
+  .wall { width: 62%; height: 30%; }
+  .car { width: 220px; margin-left: -110px; }
+}
+
+/* Controls & Info */
+.arrows { display: flex; justify-content: center; gap: 14px; margin-top: 14px; }
+.arrows button {
+  width: 44px; height: 44px; border-radius: 50%; background: none;
+  border: 1px solid var(--gold); font-size: 18px; color: var(--gold2); transition: all .2s;
+}
+.arrows button:hover { background: var(--gold); color: #000; box-shadow: 0 0 12px var(--gold-glow); }
+
+#info {
+  max-width: 580px; margin: 20px auto 0; padding: 20px 24px; margin-inline: 16px;
+  background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--gold);
+}
+@media(min-width: 620px) { #info { margin-inline: auto; } }
+#info h4 { font: 900 30px var(--head); margin: 0; letter-spacing: .05em; }
+#info small { color: var(--gold2); font-weight: 700; text-transform: uppercase; font-family: var(--head); letter-spacing: .08em; }
+#info ul { margin: 10px 0 14px; padding-left: 20px; color: var(--mut); font-size: 14px; }
+#info .row { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.price { font: 800 26px var(--head); color: var(--gold2); }
+
+.feat {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 18px 36px;
+  margin: 32px 16px 0; padding: 18px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+  font-size: 14px;
+}
+.feat span { display: block; font-weight: 600; }
+.feat small { display: block; color: var(--mut); font-size: 12px; font-weight: 400; }
+
+/* ================= 5. MODAL (PRODUCT DETAILS & 3D) ================= */
+.modal { position: fixed; inset: 0; z-index: 80; background: rgba(0,0,0,.85); backdrop-filter: blur(8px); display: none; place-items: center; padding: 16px; }
+.modal.open { display: grid; }
+.card {
+  background: var(--panel); border: 1px solid var(--gold); max-width: 660px; width: 100%;
+  max-height: 92svh; overflow-y: auto; padding: 24px; position: relative;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.9), 0 0 30px var(--gold-glow);
+}
+.x { position: absolute; right: 12px; top: 12px; background: none; border: 0; font-size: 26px; line-height: 1; padding: 4px 8px; color: var(--tx-muted); }
+.x:hover { color: var(--red); }
+
+.viewer {
+  background: radial-gradient(ellipse at 50% 80%, #2a2a31, #0b0b0f);
+  padding: 24px 12px; text-align: center; border-radius: var(--radius-sm); border: 1px solid var(--line);
+}
+.viewer svg, .viewer img { width: min(380px, 90%); height: auto; display: inline-block; filter: drop-shadow(0 14px 14px rgba(0,0,0,.8)); }
+.viewer model-viewer { width: 100%; height: 260px; background: transparent; }
+.viewer small { display: block; color: var(--mut); font-size: 12px; margin-top: 8px; font-family: var(--mono); }
+
+.dots { display: flex; gap: 10px; margin: 14px 0; }
+.dots button { width: 30px; height: 30px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: transform .2s; }
+.dots button[aria-pressed=true] { border-color: var(--gold2); transform: scale(1.18); box-shadow: 0 0 10px var(--gold-glow); }
+
+.qty { display: inline-flex; align-items: center; border: 1px solid var(--line); border-radius: 2px; }
+.qty button { background: none; border: 0; width: 36px; height: 40px; font-size: 18px; font-weight: 700; color: var(--tx); }
+.qty b { min-width: 32px; text-align: center; font-family: var(--head); font-size: 18px; }
+
+/* ================= 6. CART DRAWER & CHECKOUT ================= */
+#drawer {
+  position: fixed; top: 0; right: 0; bottom: 0; width: min(390px, 100%); z-index: 90;
+  background: var(--panel); border-left: 1px solid var(--gold);
+  transform: translateX(105%); transition: transform .35s cubic-bezier(.16,1,.3,1);
+  padding: 24px; padding-top: calc(24px + env(safe-area-inset-top, 0px));
+  display: flex; flex-direction: column; box-shadow: -10px 0 40px rgba(0,0,0,.9);
+}
+#drawer.open { transform: none; }
+#drawer h4 { font: 900 32px var(--head); margin: 0 0 14px; letter-spacing: .04em; }
+#items { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+.it {
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  padding: 10px 0; border-bottom: 1px solid var(--line); font-size: 14px;
+}
+.it button { background: none; border: 0; color: var(--red); font-size: 13px; font-weight: 600; }
+.tot { display: flex; justify-content: space-between; font: 800 24px var(--head); margin: 16px 0; color: #fff; }
+
+.checkout-box { margin-top: 14px; display: flex; flex-direction: column; gap: 10px; }
+.checkout-box input, .checkout-box textarea, .checkout-box select {
+  width: 100%; background: var(--bg); border: 1px solid var(--line); color: #fff;
+  padding: 9px 12px; font-family: inherit; font-size: 13px; border-radius: 2px;
+}
+.checkout-box input:focus, .checkout-box textarea:focus { outline: none; border-color: var(--gold); }
+
+/* Toast */
+#toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translate(-50%, 80px);
+  background: var(--gold); color: #000; font-family: var(--head); font-weight: 900;
+  font-size: 15px; padding: 10px 24px; border-radius: 999px; z-index: 1000;
+  box-shadow: 0 8px 24px var(--gold-glow); transition: transform .3s ease; pointer-events: none; letter-spacing: .08em;
+}
+#toast.show { transform: translate(-50%, 0); }
+
+footer { border-top: 1px solid var(--line); padding: 28px 20px; text-align: center; color: var(--mut); font-size: 13px; }
+footer a { color: var(--mut); margin: 0 10px; text-decoration: none; }
+footer a:hover { color: var(--gold2); }
+</style>
+</head>
+<body>
+
+<!-- SVG SYMBOLS FOR CRISP CAR SILHOUETTES -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="car" viewBox="0 0 200 84">
+    <path d="M8 58Q8 44 36 40L66 24Q100 12 134 26L162 40Q194 44 194 58V64H8Z" fill="currentColor"/>
+    <path d="M72 28Q100 18 128 29L146 40H62Z" fill="#0a0a0e" opacity=".85"/>
+    <path d="M8 56H194" stroke="#fff" stroke-opacity=".25" stroke-width="2"/>
+    <g fill="#0a0a0e" stroke="#555" stroke-width="2"><circle cx="48" cy="64" r="15"/><circle cx="154" cy="64" r="15"/></g>
+    <g fill="#c9a24b"><circle cx="48" cy="64" r="6"/><circle cx="154" cy="64" r="6"/></g>
+  </symbol>
+  <symbol id="buggy" viewBox="0 0 200 84">
+    <path d="M30 50L60 30H122L150 46L180 50V62H30Z" fill="currentColor"/>
+    <path d="M62 30L74 18H110L122 30" fill="none" stroke="currentColor" stroke-width="4"/>
+    <path d="M150 30H190L186 38H152Z" fill="currentColor"/>
+    <path d="M168 38V50" stroke="#777" stroke-width="3"/>
+    <g fill="#0a0a0e" stroke="#555" stroke-width="2"><circle cx="52" cy="62" r="18"/><circle cx="152" cy="62" r="18"/></g>
+    <g fill="#c9a24b"><circle cx="52" cy="62" r="7"/><circle cx="152" cy="62" r="7"/></g>
+  </symbol>
+  <symbol id="mt" viewBox="0 0 200 84">
+    <path d="M40 44L52 22H118L134 32H168L176 44V52H40Z" fill="currentColor"/>
+    <path d="M60 24H112L124 32H58Z" fill="#0a0a0e" opacity=".85"/>
+    <g fill="#0a0a0e" stroke="#555" stroke-width="3"><circle cx="54" cy="58" r="24"/><circle cx="154" cy="58" r="24"/></g>
+    <g fill="#c9a24b"><circle cx="54" cy="58" r="9"/><circle cx="154" cy="58" r="9"/></g>
+  </symbol>
+  <symbol id="truck" viewBox="0 0 200 84">
+    <path d="M12 46V38H70L84 22H118L136 36H190V62H12Z" fill="currentColor"/>
+    <path d="M88 25H114L128 36H80Z" fill="#0a0a0e" opacity=".85"/>
+    <g fill="#0a0a0e" stroke="#555" stroke-width="2"><circle cx="48" cy="62" r="17"/><circle cx="156" cy="62" r="17"/></g>
+    <g fill="#c9a24b"><circle cx="48" cy="62" r="6"/><circle cx="156" cy="62" r="6"/></g>
+  </symbol>
+</svg>
+
+<!-- 1. INTRO LOADER -->
+<div id="loader">
+  <div class="loader-wrap">
+    <img src="https://kommodo.ai/i/VoxWFuOeN7p6uO6nuQPC" alt="RC MEN" class="loader-logo">
+    <i></i>
+  </div>
+</div>
+
+<!-- Secret Owner Toolbar (Visible only after Owner enters PIN 1234) -->
+<div id="owner-bar">
+  <span style="color:var(--gold2); font-weight:700;">⚡ RC MEN OWNER DASHBOARD ACTIVE</span>
+  <div style="display:flex; gap:10px;">
+    <button class="cta" style="padding:4px 12px; font-size:12px;" onclick="openAdminModal()">Manage / Edit Cars</button>
+    <button class="cta gh" style="padding:4px 12px; font-size:12px;" onclick="exitOwnerMode()">Exit</button>
+  </div>
+</div>
+
+<!-- 2. SITE HEADER -->
+<header>
+  <a href="#" class="logo-link" id="siteLogo" title="RC MEN Home">
+    <img src="https://kommodo.ai/i/VoxWFuOeN7p6uO6nuQPC" alt="RC MEN Logo" class="logo-img">
+  </a>
+  <nav>
+    <a href="#garage">Garage</a>
+    <a href="#contact">Contact</a>
+    <button id="cartBtn" aria-label="Open cart">Cart <b id="cnt">0</b></button>
+  </nav>
+</header>
+
+<!-- 3. HERO -->
+<section class="hero">
+  <h2 class="gold">BUILT FOR SPEED.<br>MADE FOR ACTION.</h2>
+  <p>Small cars. Big adrenaline. Step onto the stage and command your machine.</p>
+  <div><button class="cta" onclick="document.getElementById('garage').scrollIntoView({behavior:'smooth'})">Enter the garage</button></div>
+</section>
+
+<!-- 4. LUXURY 3D GARAGE STAGE -->
+<section id="garage">
+  <h3 class="gold">The Garage</h3>
+  <p>Swipe, use the arrows or tap a car. Tap the centre car to inspect details.</p>
+  
+  <div class="stage" id="stage">
+    <div class="ring"></div>
+    <div class="side l">DRIFT<br>RACING<br>OFF-ROAD<br>MONSTER<br>BUGGY<br>TRUCK</div>
+    
+    <div class="wall">
+      <img src="https://kommodo.ai/i/VoxWFuOeN7p6uO6nuQPC" alt="RC MEN" class="wall-logo">
+      <em>SMALL CARS. BIG ADRENALINE.</em>
+    </div>
+    
+    <div class="side r">MORE THAN<br>JUST A<br>HOBBY</div>
+    <div class="floor"></div>
+    <div class="disc">RC MEN</div>
+  </div>
+
+  <div class="arrows">
+    <button id="prev" aria-label="Previous car">&#8592;</button>
+    <button id="next" aria-label="Next car">&#8594;</button>
+  </div>
+
+  <div id="info"></div>
+
+  <div class="feat">
+    <span>◆ Premium quality<small>Durable and high performance</small></span>
+    <span>◆ Fast shipping<small>Across India (24h dispatch)</small></span>
+    <span>◆ Secure payments<small>Safe COD & UPI checkout</small></span>
+    <span>◆ Support<small>Direct pit crew WhatsApp help</small></span>
+    <span>◆ Community<small>More than just a store</small></span>
+  </div>
+</section>
+
+<!-- 5. CONTACT SECTION -->
+<section id="contact" style="padding: 48px 20px; max-width: 540px; margin: auto; text-align: center;">
+  <h3 class="gold" style="font: 900 36px var(--head); margin-bottom: 6px;">Pit Crew Contact</h3>
+  <p style="color: var(--mut); font-size: 14px; margin-bottom: 20px;">Have questions about gearing, brushless motors, or spare parts?</p>
+  <form id="contactForm" onsubmit="handleContactSubmit(event)" style="display:flex; flex-direction:column; gap:10px;">
+    <input type="text" id="cname" placeholder="Your Name" required style="background:var(--panel); border:1px solid var(--line); color:#fff; padding:10px 14px; font-family:inherit;">
+    <input type="email" id="cemail" placeholder="Email Address" required style="background:var(--panel); border:1px solid var(--line); color:#fff; padding:10px 14px; font-family:inherit;">
+    <textarea id="cmsg" rows="3" placeholder="Your inquiry or build question..." required style="background:var(--panel); border:1px solid var(--line); color:#fff; padding:10px 14px; font-family:inherit;"></textarea>
+    <button class="cta" type="submit">Transmit Message 📡</button>
+  </form>
+</section>
+
+<!-- 6. FOOTER -->
+<footer>
+  <div style="margin-bottom: 12px;">
+    <img src="https://kommodo.ai/i/VoxWFuOeN7p6uO6nuQPC" alt="RC MEN" style="height: 38px; width: auto; object-fit: contain;">
+  </div>
+  <div>
+    <a href="#garage">Garage</a>
+    <a href="#contact">Contact</a>
+    <a href="#" onclick="alert('Shipping: Fast tracked express dispatch across India within 24-48 hours. COD available across all major PIN codes.')">Shipping Policy</a>
+    <a href="#" onclick="alert('Returns: 7-day technical replacement guarantee on any motor, ESC, or manufacturing defect.')">Returns</a>
+  </div>
+  <p style="margin-top: 14px;">© RC MEN INDIA. All performance rights reserved.</p>
+</footer>
+
+<!-- PRODUCT DETAILS MODAL -->
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-label="Product details">
+  <div class="card" id="card"></div>
+</div>
+
+<!-- SLIDE-OVER CART DRAWER WITH REAL CHECKOUT -->
+<aside id="drawer" aria-label="Cart">
+  <button class="x" id="closeCart" aria-label="Close cart">&times;</button>
+  <h4 class="gold">Your cart</h4>
+  <div id="items"></div>
+  <div class="tot"><span>Total</span><span id="total">₹0</span></div>
+  
+  <div id="checkout-area">
+    <button class="cta" id="checkoutBtn" style="width:100%;" onclick="toggleCheckoutForm()">Proceed to Checkout</button>
+    <div id="checkoutFormBox" class="checkout-box" style="display:none;">
+      <input type="text" id="custName" placeholder="Full Pilot Name" required>
+      <input type="tel" id="custPhone" placeholder="10-Digit Mobile" pattern="[0-9]{10}" required>
+      <input type="text" id="custPin" placeholder="6-Digit PIN Code" pattern="[0-9]{6}" required>
+      <textarea id="custAddr" rows="2" placeholder="Full Delivery Address" required></textarea>
+      <select id="custPay">
+        <option value="COD">Cash On Delivery (COD)</option>
+        <option value="UPI">Direct UPI / Instant Dispatch</option>
+      </select>
+      <button class="cta" onclick="placeOrder()" style="width:100%; margin-top:6px;">Confirm Order 🏁</button>
+    </div>
+  </div>
+</aside>
+
+<!-- Toast Notification -->
+<div id="toast">Alert</div>
+
+<!-- MASTER APPLICATION SCRIPT -->
+<script>
+var inr = function(n){ return '₹' + Number(n || 0).toLocaleString('en-IN'); };
+
+// MASTER CATALOG (Stored locally, editable via Owner Mode)
+var SEED_CARS = [
+  {id:1, name:'DRIFT RS-1', cat:'Drift', sym:'car', price:8499, colors:['#d1202f','#f1ece2','#c9a24b'], scale:'1:10', speed:'48 KM/H', motor:'3300KV Sensorless Brushless', img:'', model:'', spec:['1:10 scale, 2.4GHz remote','Gyro-assist drift chassis','45 min runtime per charge'], desc:'Slides where you point it. Hard compound polymer tyres and a precision counter-steer gyro make long drifts easy.'},
+  {id:2, name:'DUNE RUNNER', cat:'Off-Road', sym:'buggy', price:9999, colors:['#3b82f6','#f1ece2','#22a559'], scale:'1:10', speed:'55 KM/H', motor:'3660 3800KV High Torque', img:'', model:'', spec:['4WD, waterproof electronics','Long-travel oil suspension','Rubber knobby all-terrain tyres'], desc:'Mud, sand and gravel. Dual differential gearing absorbs brutal skatepark launches.'},
+  {id:3, name:'TITAN XL', cat:'Monster Truck', sym:'mt', price:14499, colors:['#d1202f','#c9a24b','#f1ece2'], scale:'1:8', speed:'88+ KM/H', motor:'4074 2050KV 6S Ready', img:'', model:'', spec:['Oversized 6-inch tyres','Dual alloy chassis decks','Steel wheelie bar included'], desc:'Crushes everything in its path. Massive ground clearance and all-metal planetary drive gears.'},
+  {id:4, name:'SAND VIPER', cat:'Buggy', sym:'buggy', price:10999, colors:['#d1202f','#c9a24b','#f1ece2'], scale:'1:10', speed:'68 KM/H', motor:'3650 High-RPM Brushless', img:'', model:'', spec:['2WD rear drive with slipper clutch','Adjustable polycarbonate rear wing','Turnbuckle steering links'], desc:'Light, agile, and quick to throw around on any high-grip track or clay surface.'},
+  {id:5, name:'RANGER 4X4', cat:'Truck', sym:'truck', price:11999, colors:['#2f2f36','#f1ece2','#c9a24b'], scale:'1:10', speed:'25 KM/H', motor:'550 35T Rebuildable Crawler', img:'', model:'', spec:['Locked portal axle gearbox','Scale detailed pickup body','Alloy front/rear crash bumpers'], desc:'A scale trophy pickup that crawls boulders, climbs 45° inclines, and handles like the real machine.'},
+  {id:6, name:'APEX GT', cat:'On Road', sym:'car', price:12999, colors:['#f1ece2','#c9a24b','#3b82f6'], scale:'1:10', speed:'75 KM/H', motor:'Brushless 4-Pole Motor', img:'', model:'', spec:['Up to 75 km/h top velocity','Aluminium oil-damped shocks','Belt-drive precision transmission'], desc:'Engineered strictly for asphalt lap times. Low center of gravity and razor-sharp steering authority.'}
+];
+
+// Load local overrides or seed
+var cars = JSON.parse(localStorage.getItem('rcm_saved_cars') || 'null') || SEED_CARS;
+var settings = {
+  admin_pin: '1234',
+  wa: '919876543210',             // Replace with your real WhatsApp number
+  web3forms_key: 'YOUR_WEB3FORMS_ACCESS_KEY' // Replace with your free key from web3forms.com
+};
+
+var act = 0, cart = [], stage = document.getElementById('stage'), els = [], info = document.getElementById('info');
+var isOwnerLoggedIn = false;
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 2200);
+}
+
+function svg(c, s) {
+  return '<svg viewBox="0 0 200 84" class="car-visual" style="color:' + c + '"><use href="#' + s + '"/></svg>';
+}
+
+function renderStageCars() {
+  stage.querySelectorAll('.car').forEach(function(e){ e.remove(); });
+  els = [];
+  cars.forEach(function(c, i){
+    var b = document.createElement('button');
+    b.className = 'car';
+    b.setAttribute('aria-label', c.name + ', ' + inr(c.price));
+
+    var visual = c.img 
+      ? '<img src="' + c.img + '" alt="' + c.name + '" class="car-visual" onerror="this.outerHTML=\'' + svg(c.colors[0], c.sym).replace(/"/g, '&quot;') + '\'">'
+      : svg(c.colors[0], c.sym);
+
+    b.innerHTML = visual + '<span>' + c.cat + '</span>';
+    b.onclick = function(){
+      if (i === act) openCar(c);
+      else { act = i; layout(); }
+    };
+    b.onmouseenter = function(){ show(c); };
+    b.onmouseleave = function(){ show(cars[act]); };
+    stage.appendChild(b);
+    els.push(b);
+  });
+  layout();
+}
+
+/* ================= PARABOLIC MATHEMATICAL ARRANGEMENT ================= */
+function layout(){
+  var n = cars.length, nw = innerWidth < 620, R = nw ? innerWidth * .9 : Math.min(innerWidth * .42, 500);
+  els.forEach(function(e, i){
+    // Offset relative to center car
+    var o = ((i - act + 3) % n + n) % n - 3;
+    var ao = Math.abs(o);
+    var t = o * (nw ? .5 : .36);
+    
+    // Parabolic horizontal arc formula
+    var x = Math.sin(t) * R;
+    var y = (1 - Math.cos(t)) * R * .32;
+    var sc = o === 0 ? 1.15 : 1 - ao * .07;
+    var hide = nw && ao > 1;
+
+    e.style.transform = 'translate3d(' + x + 'px,' + y + 'px,0) rotate(' + (t * 14) + 'deg) scale(' + sc + ')';
+    e.style.opacity = hide ? 0 : 1 - ao * .12;
+    e.style.zIndex = 10 - ao;
+    e.style.pointerEvents = hide ? 'none' : 'auto';
+    e.classList.toggle('on', o === 0);
+  });
+  if (cars[act]) show(cars[act]);
+}
+
+function show(c){
+  info.innerHTML = 
+    '<div style="display:flex; justify-content:space-between; align-items:flex-start;">' +
+      '<div><small>' + c.cat + '</small><h4>' + c.name + '</h4></div>' +
+      (isOwnerLoggedIn ? '<button class="cta gh" style="padding:4px 10px; font-size:12px;" onclick="openEditCarModal(' + c.id + ')">✏️ Edit</button>' : '') +
+    '</div>' +
+    '<ul>' + c.spec.map(function(s){ return '<li>' + s + '</li>'; }).join('') + '</ul>' +
+    '<div class="row">' +
+      '<span class="price">' + inr(c.price) + '</span>' +
+      '<button class="cta gh" onclick="openCar(cars[' + act + '])">View details</button>' +
+    '</div>';
+}
+
+function step(d){ act = (act + d + cars.length) % cars.length; layout(); }
+document.getElementById('prev').onclick = function(){ step(-1); };
+document.getElementById('next').onclick = function(){ step(1); };
+
+document.addEventListener('keydown', function(e){
+  if (e.key === 'ArrowLeft') step(-1);
+  if (e.key === 'ArrowRight') step(1);
+  if (e.key === 'Escape') { closeModal(); drawer.classList.remove('open'); }
+});
+
+// Touch swipe support on garage stage
+var sx = null;
+stage.addEventListener('touchstart', function(e){ sx = e.touches[0].clientX; }, {passive:true});
+stage.addEventListener('touchend', function(e){
+  if (sx === null) return;
+  var d = e.changedTouches[0].clientX - sx;
+  if (Math.abs(d) > 40) step(d < 0 ? 1 : -1);
+  sx = null;
+});
+window.addEventListener('resize', layout);
+
+/* ================= PRODUCT DETAILS MODAL (3D / VIEWER) ================= */
+var modal = document.getElementById('modal'), card = document.getElementById('card'), cur, col, qty;
+
+function openCar(c){
+  cur = c; col = c.colors[0]; qty = 1; drawCard(); modal.classList.add('open');
+}
+
+function drawCard(){
+  var viewerHtml = cur.model
+    ? '<model-viewer src="' + cur.model + '" camera-controls auto-rotate shadow-intensity="1.5" alt="' + cur.name + '"></model-viewer>'
+    : (cur.img ? '<img src="' + cur.img + '" alt="' + cur.name + '">' : svg(col, cur.sym));
+
+  card.innerHTML = 
+    '<button class="x" onclick="closeModal()" aria-label="Close">&times;</button>' +
+    '<div class="viewer">' + viewerHtml + 
+      '<small>' + (cur.model ? '360° 3D Model Active' : 'RTR Package with 2.4GHz Transmitter & Spares') + '</small>' +
+    '</div>' +
+    '<h4 style="font:900 32px var(--head); margin:14px 0 2px; letter-spacing:.04em;">' + cur.name + '</h4>' +
+    '<small style="color:var(--gold2); font-weight:700; font-family:var(--head); text-transform:uppercase;">' + cur.cat + ' • SCALE ' + (cur.scale || '1:10') + '</small>' +
+    '<p style="margin:10px 0 14px; font-size:14px; color:var(--mut); line-height:1.6;">' + cur.desc + '</p>' +
+    
+    '<div class="dots" role="group" aria-label="Colour">' + 
+      cur.colors.map(function(k){
+        return '<button style="background:' + k + '" aria-pressed="' + (k === col) + '" onclick="col=\'' + k + '\'; drawCard()"></button>';
+      }).join('') + 
+    '</div>' +
+
+    '<div class="row" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-top:16px;">' +
+      '<span class="price">' + inr(cur.price * qty) + '</span>' +
+      '<span class="qty">' +
+        '<button onclick="qty=Math.max(1,qty-1); drawCard()" aria-label="Less">&minus;</button>' +
+        '<b>' + qty + '</b>' +
+        '<button onclick="qty++; drawCard()" aria-label="More">+</button>' +
+      '</span>' +
+      '<button class="cta" onclick="add()">Add to cart</button>' +
+    '</div>';
+}
+
+function closeModal(){ modal.classList.remove('open'); }
+modal.addEventListener('click', function(e){ if (e.target === modal) closeModal(); });
+
+/* ================= CART & REAL CHECKOUT FLOW ================= */
+var drawer = document.getElementById('drawer');
+
+function add(){
+  var f = cart.find(function(x){ return x.id === cur.id && x.col === col; });
+  if (f) f.q += qty;
+  else cart.push({ id: cur.id, name: cur.name, price: cur.price, col: col, q: qty });
+  closeModal();
+  renderCart();
+  drawer.classList.add('open');
+  showToast('Added ' + cur.name + ' to cart');
+}
+
+function renderCart(){
+  var n = 0, t = 0;
+  var itemsEl = document.getElementById('items');
+  if (!cart.length) {
+    itemsEl.innerHTML = '<p style="color:var(--mut); font-size:14px; text-align:center; margin-top:30px;">Your cart is empty. Pick a machine from the garage.</p>';
+  } else {
+    itemsEl.innerHTML = cart.map(function(x, i){
+      n += x.q; t += x.q * x.price;
+      return '<div class="it">' +
+        '<div><b>' + x.name + '</b> ×' + x.q + '<br><span style="color:var(--gold2)">' + inr(x.q * x.price) + '</span></div>' +
+        '<button onclick="cart.splice(' + i + ',1); renderCart()">Remove</button>' +
+      '</div>';
+    }).join('');
+  }
+  document.getElementById('cnt').textContent = n;
+  document.getElementById('total').textContent = inr(t);
+}
+
+document.getElementById('cartBtn').onclick = function(){ drawer.classList.add('open'); };
+document.getElementById('closeCart').onclick = function(){ drawer.classList.remove('open'); };
+
+function toggleCheckoutForm() {
+  if (!cart.length) { showToast('Cart is empty!'); return; }
+  var box = document.getElementById('checkoutFormBox');
+  var btn = document.getElementById('checkoutBtn');
+  var isOpen = box.style.display !== 'none';
+  box.style.display = isOpen ? 'none' : 'flex';
+  btn.textContent = isOpen ? 'Proceed to Checkout' : 'Hide Checkout Details';
+}
+
+async function placeOrder() {
+  var name = document.getElementById('custName').value.trim();
+  var phone = document.getElementById('custPhone').value.trim();
+  var pin = document.getElementById('custPin').value.trim();
+  var addr = document.getElementById('custAddr').value.trim();
+  var pay = document.getElementById('custPay').value;
+
+  if (!name || !phone || !pin || !addr) {
+    showToast('Please fill all delivery details');
+    return;
+  }
+
+  var orderId = 'RCM-' + Math.floor(100000 + Math.random() * 900000);
+  var total = cart.reduce(function(acc, i){ return acc + (i.price * i.q); }, 0);
+  var itemsSummary = cart.map(function(i){ return '• ' + i.name + ' (x' + i.q + ') - ' + inr(i.price * i.q); }).join('\n');
+
+  // 1. Automatic Email to Seller (via Web3Forms)
+  if (settings.web3forms_key && settings.web3forms_key !== 'YOUR_WEB3FORMS_ACCESS_KEY') {
+    fetch('https://api.web3forms.com/submit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        access_key: settings.web3forms_key,
+        subject: '⚡ New RC MEN Order ' + orderId + ' - ' + inr(total) + ' (' + name + ')',
+        message: 'Order ID: ' + orderId + '\nCustomer: ' + name + '\nPhone: ' + phone + '\nPIN: ' + pin + '\nAddress: ' + addr + '\nPayment: ' + pay + '\n\nItems:\n' + itemsSummary + '\nTotal: ' + inr(total)
+      })
+    }).catch(console.error);
+  }
+
+  // 2. Instant WhatsApp Dispatch
+  var wa = (settings.wa || '').replace(/\D/g, '');
+  if (wa) {
+    var msg = '⚡ *NEW RC MEN ORDER ' + orderId + '*\n\n' +
+              '👤 *Customer:* ' + name + '\n' +
+              '📞 *Phone:* ' + phone + '\n' +
+              '📍 *Address:* ' + addr + ' - ' + pin + '\n' +
+              '💳 *Payment:* ' + pay + '\n\n' +
+              '*Items:*\n' + itemsSummary + '\n\n' +
+              '💰 *Total: ' + inr(total) + '*';
+    window.open('https://wa.me/' + wa + '?text=' + encodeURIComponent(msg), '_blank');
+  }
+
+  cart = [];
+  renderCart();
+  drawer.classList.remove('open');
+  toggleCheckoutForm();
+
+  card.innerHTML = 
+    '<button class="x" onclick="closeModal()">&times;</button>' +
+    '<div style="text-align:center; padding:30px 10px;">' +
+      '<div style="font-size:48px; margin-bottom:10px;">🏁</div>' +
+      '<h4 style="font:900 32px var(--head); color:var(--gold2)">Order Dispatched!</h4>' +
+      '<p style="color:var(--tx-muted); margin:12px 0 20px;">Order ID: <b style="color:#fff">' + orderId + '</b><br>Our pit crew has received your order details.</p>' +
+      '<button class="cta" onclick="closeModal()">Back to Garage</button>' +
+    '</div>';
+  modal.classList.add('open');
+}
+
+/* ================= 7. SECRET OWNER / ADMIN DASHBOARD ================= */
+// 5-Tap on the logo unlocks Owner Mode
+var logoTaps = 0, logoTapTimer = null;
+document.getElementById('siteLogo').addEventListener('click', function(e){
+  logoTaps++;
+  clearTimeout(logoTapTimer);
+  logoTapTimer = setTimeout(function(){ logoTaps = 0; }, 2000);
+  if (logoTaps >= 5) {
+    e.preventDefault();
+    logoTaps = 0;
+    promptOwnerLogin();
+  }
+});
+
+// Secret Keyboard combo: Ctrl + Shift + A
+window.addEventListener('keydown', function(e){
+  if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
+    e.preventDefault();
+    promptOwnerLogin();
+  }
+});
+
+// URL Hash #admin
+if (window.location.hash === '#admin') {
+  setTimeout(promptOwnerLogin, 600);
+}
+
+function promptOwnerLogin() {
+  if (isOwnerLoggedIn) { openAdminModal(); return; }
+  var pin = prompt('Owner Verification — Enter Secret PIN:');
+  if (pin === (settings.admin_pin || '1234')) {
+    isOwnerLoggedIn = true;
+    document.getElementById('owner-bar').classList.add('active');
+    showToast('Owner Mode Unlocked! 🔓');
+    layout();
+    openAdminModal();
+  } else if (pin !== null) {
+    alert('Incorrect PIN');
+  }
+}
+
+function exitOwnerMode() {
+  isOwnerLoggedIn = false;
+  document.getElementById('owner-bar').classList.remove('active');
+  if (window.location.hash === '#admin') history.replaceState(null, null, ' ');
+  layout();
+  showToast('Owner Mode Locked');
+}
+
+function openAdminModal() {
+  card.innerHTML = 
+    '<button class="x" onclick="closeModal()">&times;</button>' +
+    '<h4 style="font:900 28px var(--head); color:var(--gold2); margin-bottom:6px;">⚡ Owner Management Console</h4>' +
+    '<p style="color:var(--mut); font-size:13px; margin-bottom:16px;">Edit prices, photo links, or 3D models directly on your live site.</p>' +
+    '<div style="display:flex; gap:10px; margin-bottom:16px;">' +
+      '<button class="cta" style="padding:6px 14px; font-size:13px;" onclick="openEditCarModal(null)">+ Add New Car</button>' +
+      '<button class="cta gh" style="padding:6px 14px; font-size:13px;" onclick="exportBackupData()">💾 Download Backup</button>' +
+    '</div>' +
+    '<div style="display:flex; flex-direction:column; gap:8px;">' +
+      cars.map(function(c){
+        return '<div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg); padding:10px 14px; border:1px solid var(--line);">' +
+          '<div><b>' + c.name + '</b> <span style="color:var(--gold2)">(' + inr(c.price) + ')</span><br><small style="color:var(--mut)">' + c.cat + '</small></div>' +
+          '<div style="display:flex; gap:6px;">' +
+            '<button class="cta gh" style="padding:4px 10px; font-size:12px;" onclick="openEditCarModal(' + c.id + ')">Edit</button>' +
+            '<button class="cta gh" style="padding:4px 8px; font-size:12px; color:var(--red);" onclick="deleteCar(' + c.id + ')">🗑️</button>' +
+          '</div>' +
+        '</div>';
+      }).join('') +
+    '</div>';
+  modal.classList.add('open');
+}
+
+function openEditCarModal(id) {
+  var isNew = !id;
+  var c = isNew ? { id: Date.now(), name:'', cat:'Drift', sym:'car', price:9999, colors:['#d1202f','#f1ece2','#c9a24b'], scale:'1:10', speed:'50 KM/H', img:'', model:'', spec:['2.4GHz Radio RTR'], desc:'' } : cars.find(function(x){ return x.id === id; });
+
+  card.innerHTML = 
+    '<button class="x" onclick="openAdminModal()">&times;</button>' +
+    '<h4 style="font:900 26px var(--head); margin-bottom:12px;">' + (isNew ? '+ Add New Machine' : 'Edit: ' + c.name) + '</h4>' +
+    '<form id="editCarForm" onsubmit="saveCar(event, ' + c.id + ', ' + isNew + ')" style="display:flex; flex-direction:column; gap:10px; font-size:13px;">' +
+      '<div><label style="color:var(--mut)">Car Name</label><input type="text" id="edName" required value="' + c.name + '" style="width:100%; background:var(--bg); border:1px solid var(--line); color:#fff; padding:8px;"></div>' +
+      '<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">' +
+        '<div><label style="color:var(--mut)">Category</label><input type="text" id="edCat" required value="' + c.cat + '" style="width:100%; background:var(--bg); border:1px solid var(--line); color:#fff; padding:8px;"></div>' +
+        '<div><label style="color:var(--mut)">Price (₹)</label><input type="number" id="edPrice" required value="' + c.price + '" style="width:100%; background:var(--bg); border:1px solid var(--line); color:#fff; padding:8px;"></div>' +
+      '</div>' +
+      '<div><label style="color:var(--mut)">Image URL (Optional)</label><input type="url" id="edImg" placeholder="https://..." value="' + (c.img || '') + '" style="width:100%; background:var(--bg); border:1px solid var(--line); color:#fff; padding:8px;"></div>' +
+      '<div><label style="color:var(--mut)">3D Model URL (.glb file, Optional)</label><input type="url" id="edModel" placeholder="https://.../car.glb" value="' + (c.model || '') + '" style="width:100%; background:var(--bg); border:1px solid var(--line); color:#fff; padding:8px;"></div>' +
+      '<div><label style="color:var(--mut)">Description</label><textarea id="edDesc" rows="2" style="width:100%; background:var(--bg); border:1px solid var(--line); color:#fff; padding:8px;">' + c.desc + '</textarea></div>' +
+      '<div style="display:flex; gap:10px; margin-top:10px;">' +
+        '<button class="cta" type="submit" style="flex:1;">Save Machine ✅</button>' +
+        '<button class="cta gh" type="button" onclick="openAdminModal()">Cancel</button>' +
+      '</div>' +
+    '</form>';
+}
+
+function saveCar(e, id, isNew) {
+  e.preventDefault();
+  var c = isNew ? { id: id, colors:['#d1202f','#f1ece2','#c9a24b'], sym:'car', spec:['2.4GHz Radio RTR'] } : cars.find(function(x){ return x.id === id; });
+  c.name = document.getElementById('edName').value.trim();
+  c.cat = document.getElementById('edCat').value.trim();
+  c.price = Number(document.getElementById('edPrice').value) || 0;
+  c.img = document.getElementById('edImg').value.trim();
+  c.model = document.getElementById('edModel').value.trim();
+  c.desc = document.getElementById('edDesc').value.trim();
+
+  if (isNew) cars.push(c);
+  localStorage.setItem('rcm_saved_cars', JSON.stringify(cars));
+  showToast('Saved successfully! 🚀');
+  renderStageCars();
+  openAdminModal();
+}
+
+function deleteCar(id) {
+  if (!confirm('Delete this machine from garage?')) return;
+  cars = cars.filter(function(x){ return x.id !== id; });
+  localStorage.setItem('rcm_saved_cars', JSON.stringify(cars));
+  showToast('Car deleted');
+  renderStageCars();
+  openAdminModal();
+}
+
+function exportBackupData() {
+  var blob = new Blob([JSON.stringify(cars, null, 2)], { type: 'application/json' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'rc-men-cars.json';
+  a.click();
+  showToast('Backup downloaded!');
+}
+
+function handleContactSubmit(e) {
+  e.preventDefault();
+  var name = document.getElementById('cname').value;
+  var msg = document.getElementById('cmsg').value;
+  var wa = (settings.wa || '').replace(/\D/g, '');
+  if (wa) window.open('https://wa.me/' + wa + '?text=' + encodeURIComponent('Pilot: ' + name + '\nInquiry: ' + msg), '_blank');
+  e.target.reset();
+  showToast('Inquiry Transmitted!');
+}
+
+/* ================= INITIALIZE ================= */
+renderStageCars();
+renderCart();
+setTimeout(function(){ document.getElementById('loader').classList.add('done'); }, 1800);
+</script>
+</body>
+</html>
